@@ -1,7 +1,5 @@
 #!/bin/bash
 
-YO="/Applications/Utilities/yo.app/Contents/MacOS/yo"
-
 FileWave-loggedin-username() {
 	echo "$(stat -f%Su /dev/console)"
 }
@@ -23,10 +21,10 @@ FileWave-app-postflight() {
 		fi
 		# Check for running App
 		if [[ "$(pgrep -lx "${APP_PS}" | awk '{print$2}')" != "" ]]; then
-			# If all files are re-used for the fileset, don't inform the user!
-			if [[ "$(tail -7 /var/log/fwcld.log | grep "(100 percent of data) for Fileset:")" == "" ]]; then
+			# If all files are re-used for the fileset, don't inform the user! Also check for Yo.app
+			if [[ "$(tail -7 /var/log/fwcld.log | grep "(100 percent of data) for Fileset:")" == "" ]] && [[ -f "${YO}" ]]; then
 				USERID=$(FileWave-loggedin-uid)
-				launchctl asuser ${USERID} $YO -t "Ny version av ${APP_NAME}" -n "Du bör starta om programmmet för att undvika problem." -i "${APP_ICON}"
+				launchctl asuser ${USERID} $YO -t "New version of ${APP_NAME}" -n "You should restart the app to avoid problems" -i "${APP_ICON}"
 			fi
 		fi
 	fi
@@ -150,6 +148,8 @@ FileWave-add-loggedin-to-group() {
 		fi
 	fi
 }
+
+YO="/Applications/Utilities/yo.app/Contents/MacOS/yo"
 
 USERNAME="$(FileWave-loggedin-username)"
 
