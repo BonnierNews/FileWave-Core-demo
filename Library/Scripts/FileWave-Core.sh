@@ -39,25 +39,31 @@ FileWave-app-verify-chown() {
 
 FileWave-unload-LaunchAgent() {
 	# $1 = name of or path to LaunchAgent
-	if [[ -f /Library/LaunchAgents/$1 ]]; then
-		PLIST_PATH=/Library/LaunchAgents/$1
-	else
-		PLIST_PATH="$1"
-	fi
-	if [[ -f "${PLIST_PATH}" ]]; then
-		sudo -u ${USERNAME} launchctl unload "${PLIST_PATH}"
+	# Only run if user is logged in
+	if [[ ! "${USERNAME}" == "root" ]]; then
+		if [[ -f /Library/LaunchAgents/$1 ]]; then
+			PLIST_PATH=/Library/LaunchAgents/$1
+		else
+			PLIST_PATH="$1"
+		fi
+		if [[ -f "${PLIST_PATH}" ]]; then
+			sudo -u ${USERNAME} launchctl unload "${PLIST_PATH}"
+		fi
 	fi
 }
 FileWave-reload-LaunchAgent() {
 	# $1 = name of or path to LaunchAgent
-	if [[ -f /Library/LaunchAgents/$1 ]]; then
-		PLIST_PATH=/Library/LaunchAgents/$1
-	else
-		PLIST_PATH="$1"
-	fi
-	if [[ -f "${PLIST_PATH}" ]]; then
-		sudo -u ${USERNAME} launchctl unload "${PLIST_PATH}"
-		sudo -u ${USERNAME} launchctl load -S Aqua "${PLIST_PATH}"
+	# Only run if user is logged in
+	if [[ ! "${USERNAME}" == "root" ]]; then
+		if [[ -f /Library/LaunchAgents/$1 ]]; then
+			PLIST_PATH=/Library/LaunchAgents/$1
+		else
+			PLIST_PATH="$1"
+		fi
+		if [[ -f "${PLIST_PATH}" ]]; then
+			sudo -u ${USERNAME} launchctl unload "${PLIST_PATH}"
+			sudo -u ${USERNAME} launchctl load -S Aqua "${PLIST_PATH}"
+		fi
 	fi
 }
 
@@ -142,6 +148,7 @@ FileWave-set-inventory-data() {
 }
 
 FileWave-add-loggedin-to-group() {
+	# $1=name of group
 	if [[ -n $1 ]] && [[ ! ${USERNAME} == "root" ]]; then
 		if [[ $(dseditgroup -o checkmember -m ${USERNAME} $1 | awk '{print$1}') == "no" ]]; then
 			dseditgroup -o edit -a ${USERNAME} -t user $1
